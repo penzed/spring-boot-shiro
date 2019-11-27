@@ -28,11 +28,12 @@ public class ShiroConfig {
         shiroFilterFactoryBean.setSuccessUrl("/index");
         // 未授权url
         shiroFilterFactoryBean.setUnauthorizedUrl("/403");
-
+        //拦截器
         LinkedHashMap<String, String> filterChainDefinitionMap = new LinkedHashMap<>();
 
         //<!-- authc:所有url都必须认证通过才可以访问; anon:所有url都都可以匿名访问-->
         // 定义filterChain，静态资源不拦截
+        //<!-- 过滤链定义，从上向下顺序执行，一般将/**放在最为下边 -->:这是一个坑呢，一不小心代码就不好使了;
         filterChainDefinitionMap.put("/css/**", "anon");
         filterChainDefinitionMap.put("/js/**", "anon");
         filterChainDefinitionMap.put("/fonts/**", "anon");
@@ -44,7 +45,9 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/", "anon");
         // 除上以外所有url都必须认证通过才可以访问，未通过认证自动访问LoginUrl
         //主要这行代码必须放在所有权限设置的最后，不然会导致所有 url 都被拦截 剩余的都需要认证
+        //用户拦截器，用户已经身份验证/记住我登录的都可；示例/**=user
         filterChainDefinitionMap.put("/**", "user");
+        //其中anon、authc等为Shiro为我们实现的过滤器
 
         shiroFilterFactoryBean.setFilterChainDefinitionMap(filterChainDefinitionMap);
 
@@ -63,6 +66,8 @@ public class ShiroConfig {
     public ShiroRealm shiroRealm() {
         // 配置Realm，需自己实现
         ShiroRealm shiroRealm = new ShiroRealm();
+        //给权限验证器配置上自定义的密码验证器
+//        shiroRealm.setCredentialsMatcher(credentialsMatcher);
         return shiroRealm;
     }
 
@@ -92,6 +97,7 @@ public class ShiroConfig {
         return cookieRememberMeManager;
     }
 
+    /*要开启这些注解的使用，需要在ShiroConfig中添加如下配置*/
     @Bean
     public AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor(SecurityManager securityManager) {
         AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor = new AuthorizationAttributeSourceAdvisor();
